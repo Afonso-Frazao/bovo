@@ -1,3 +1,5 @@
+#include "head.h"
+
 int evaluateposition(int **board) {
   int eval; // The 'X' will get a positive eval while the 'O' will get a
             // negative one and then they will add
