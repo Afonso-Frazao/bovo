@@ -1,6 +1,6 @@
 #include "head.h"
 
-int printingtime(int **board) {
+/*int printingtime(int **board) {
   int i, j;
 
   for (i = 0; i < 23; i++) {
@@ -38,7 +38,7 @@ int printingtime(int **board) {
   printf("\n");
 
   return 0;
-}
+}*/
 
 int main() {
   int **board;
