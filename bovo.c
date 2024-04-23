@@ -82,7 +82,7 @@ int printingtime(int **board, int lastl, int lastc) {
 int main() {
   int **board;
   int i;
-  int l, c;
+  char l, c;
   int gameover = 0;
   coords *moves;
   int playsN;
@@ -114,9 +114,12 @@ int main() {
       }
       // fflush(stdout);
 
-      scanf(" %d %d", &l, &c);
-      // l = l - 'a' + 1;
-      // c = c - 'a' + 1;
+      scanf(" %c %c", &l, &c);
+
+      l = l - 'a' + 1;
+      c = c - 'a' + 1;
+
+      printf("coords: %d %d\n", l, c);
 
       if ((l < 1 || l > 22 || c < 1 || c > 22) && (l != 'z' - 'a' + 1) &&
           (l != 'y' - 'a' + 1)) {
@@ -184,13 +187,13 @@ int main() {
               return 1;
             }
             printf("\n\033[38;5;208mX\033[0m wins!\n\n");
-            break;
+            return 0;
           } else {
             if (printingtime(board, l, c) != 0) {
               return 1;
             }
             printf("\n\033[38;5;39mO\033[0m wins!\n\n");
-            break;
+            return 0;
           }
         }
       }
