@@ -12,36 +12,62 @@ int printingtime(int **board, int lastl, int lastc) {
   printf("\n");
   for (i = 0; i < 23; i++) {
     for (j = 0; j < 23; j++) {
-      if (board[i][j] != 0) {
-        if ((j % 2) == 0) {
-          if (board[i][j] == 'X') {
-            printf("\033[38;5;208mX\033[0m|"); // Color code 208 for orange
-          } else if (board[i][j] == 'O') {
-            printf("\033[38;5;39mO\033[0m|"); // Color code 39 for cyan
-          } else if (board[i][j] == -'X') {
-            printf("\033[38;5;34mX\033[0m|");
-          } else if (board[i][j] == -'O') {
-            printf("\033[38;5;34mO\033[0m|");
-          } else {
-            printf("%c|", board[i][j]);
+      if (board[i][j] != 0) {             // print characters
+        if ((j % 2) == 0) {               // print with white bar
+          if (i != lastl || j != lastc) { // any play that isn't the last
+            if (board[i][j] == 'X') {
+              printf("\033[38;5;208mX\033[0m|"); // color code 208 for orange
+            } else if (board[i][j] == 'O') {
+              printf("\033[38;5;39mO\033[0m|"); // color code 39 for cyan
+            } else if (board[i][j] == -'X') {
+              printf("\033[38;5;34mX\033[0m|"); // color code 34 for light green
+            } else if (board[i][j] == -'O') {
+              printf("\033[38;5;34mO\033[0m|");
+            } else {
+              printf("%c|", board[i][j]);
+            }
+          } else { // lastest play
+            if (board[i][j] == 'X') {
+              printf("\033[38;5;160mX\033[0m|"); // color code 160 for red
+            } else if (board[i][j] == 'O') {
+              printf("\033[38;5;63mO\033[0m|"); // color code 33 for blue
+            } else if (board[i][j] == -'X') {
+              printf("\033[38;5;58mX\033[0m|"); // color code 28 for dark green
+            } else if (board[i][j] == -'O') {
+              printf("\033[38;5;58mO\033[0m|");
+            }
           }
-        } else {
-          if (board[i][j] == 'X') {
-            printf("\033[38;5;208mX\033[38;5;240m|\033[0m");
-          } else if (board[i][j] == 'O') {
-            printf("\033[38;5;39mO\033[38;5;240m|\033[0m");
-          } else if (board[i][j] == -'X') {
-            printf("\033[38;5;34mX\033[38;5;240m|\033[0m");
-          } else if (board[i][j] == -'O') {
-            printf("\033[38;5;34mO\033[38;5;240m|\033[0m");
-          } else {
-            printf("%c\033[38;5;240m|\033[0m", board[i][j]);
+        } else {                          // print with grey bar
+          if (i != lastl || j != lastc) { // any play that isn't the last
+            if (board[i][j] == 'X') {
+              printf("\033[38;5;208mX\033[38;5;240m|\033[0m");
+            } else if (board[i][j] == 'O') {
+              printf("\033[38;5;39mO\033[38;5;240m|\033[0m");
+            } else if (board[i][j] == -'X') {
+              printf("\033[38;5;34mX\033[38;5;240m|\033[0m");
+            } else if (board[i][j] == -'O') {
+              printf("\033[38;5;34mO\033[38;5;240m|\033[0m");
+            } else {
+              printf("%c\033[38;5;240m|\033[0m", board[i][j]);
+            }
+          } else { // latest play
+            if (board[i][j] == 'X') {
+              printf("\033[38;5;160mX\033[38;5;240m|\033[0m");
+            } else if (board[i][j] == 'O') {
+              printf("\033[38;5;63mO\033[38;5;240m|\033[0m");
+            } else if (board[i][j] == -'X') {
+              printf("\033[38;5;58mX\033[38;5;240m|\033[0m");
+            } else if (board[i][j] == -'O') {
+              printf("\033[38;5;58mO\033[38;5;240m|\033[0m");
+            } else {
+              printf("%c\033[38;5;240m|\033[0m", board[i][j]);
+            }
           }
         }
-      } else {
-        if ((j % 2) == 0) {
+      } else {              // print spaces
+        if ((j % 2) == 0) { // print with white bar
           printf(" |");
-        } else {
+        } else { // print with grey bar
           printf(" \033[38;5;240m|\033[0m");
         }
       }
@@ -56,7 +82,7 @@ int printingtime(int **board, int lastl, int lastc) {
 int main() {
   int **board;
   int i;
-  char l, c;
+  int l, c;
   int gameover = 0;
   coords *moves;
   int playsN;
@@ -74,7 +100,7 @@ int main() {
   moves = (coords *)calloc(484, sizeof(int));
 
   playsN = 0;
-  while (gameover == 0) {
+  while (playsN < 484) {
     for (i = 0; i < 2; i++) {
       if (playsN != 0) {
         if (printingtime(board, moves[playsN - 1].l, moves[playsN - 1].c) !=
@@ -88,9 +114,9 @@ int main() {
       }
       // fflush(stdout);
 
-      scanf(" %c %c", &l, &c);
-      l = l - 'a' + 1;
-      c = c - 'a' + 1;
+      scanf(" %d %d", &l, &c);
+      // l = l - 'a' + 1;
+      // c = c - 'a' + 1;
 
       if ((l < 1 || l > 22 || c < 1 || c > 22) && (l != 'z' - 'a' + 1) &&
           (l != 'y' - 'a' + 1)) {
@@ -164,10 +190,12 @@ int main() {
               return 1;
             }
             printf("\n\033[38;5;39mO\033[0m wins!\n\n");
+            break;
           }
         }
       }
     }
   }
+  printf("\nBoard full, is a draw!\n");
   return 0;
 }
