@@ -81,8 +81,9 @@ int verifygameover(int **board) {
     }
   }
 
-  for (streak = 0, symbol = 'X', diag = 22; diag >= 1;
-       diag--) { // verify diagonal 1
+  for (streak = 0, symbol = 'X', diag = 18;
+       diag >= 1; // TODO verify diag initialization value
+       diag--) {  // verify diagonal 1
     for (i = 1, j = diag; j < 23; i++, j++) {
       if (board[i][j] == symbol) {
         streak++;
@@ -104,7 +105,7 @@ int verifygameover(int **board) {
     }
   }
 
-  for (streak = 0, symbol = 'X', diag = 2; diag < 23;
+  for (streak = 0, symbol = 'X', diag = 2; diag < 19;
        diag++) { // verify diagonal 1
     for (i = diag, j = 1; i < 23; i++, j++) {
       if (board[i][j] == symbol) {
@@ -127,7 +128,7 @@ int verifygameover(int **board) {
     }
   }
 
-  for (streak = 0, symbol = 'X', diag = 1; diag < 23;
+  for (streak = 0, symbol = 'X', diag = 5; diag < 23;
        diag++) { // verify diagonal 2
     for (i = diag, j = 1; i >= 1; i--, j++) {
       if (board[i][j] == symbol) {
@@ -150,7 +151,7 @@ int verifygameover(int **board) {
     }
   }
 
-  for (streak = 0, symbol = 'X', diag = 2; diag < 23;
+  for (streak = 0, symbol = 'X', diag = 2; diag < 19;
        diag++) { // verify diagonal 2
     for (i = 22, j = diag; j < 23; i--, j++) {
       if (board[i][j] == symbol) {
