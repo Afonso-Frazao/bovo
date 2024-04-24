@@ -1,32 +1,62 @@
 #include "head.h"
 
-int gamealreadyover(int **board) { return 0; }
+int evaluatescore(int *streak, int *spaces, int symbol, int symboltoplay,
+                  int currentstreak, int currentspace) {
+  return 0;
+}
 
-int evaluateposition(int **board) {
+int gamealreadyover(int **board, int symboltoplay) { return 0; }
+
+int evaluateposition(int **board, int symboltoplay) {
   int eval; // The 'X' will get a positive eval while the 'O' will get a
-            // negative one and then they will add
-  int streak, spaces, symbol;
-  int i, j;
+            // negative onel and then they will add
+  int *streak, currentstreak, *spaces, currentspace, symbol,
+      lastwassymbol; // lastwassymbol for when the last board square verified
+                     // was a symbol
+  int lastwasspace, firstwasspace;
+  long score;
+  int l, c;
 
-  for (streak = 0, spaces = 3, symbol = 'X', i = 1; i < 23;
-       i++) { // verify lines
-    for (j = 1; j < 23; j++) {
-      if (board[i][j] == symbol) {
-        streak++;
-      } else if (board[i][j] != 0) {
-        streak = 1;
-        spaces = 3;
-        symbol = board[i][j];
-      } else {
-        spaces--;
-        if (spaces < 0) {
-          streak = 0;
-          spaces = 3;
+  /*for (l = 1,symbol = 0, currentspace = 0, lastwassymbol = 0, score = 0;
+       l < 23; l++) {
+    for (c = 1; c < 23; c++) {
+      if (board[l][c] == 0) {
+        if (lastwassymbol == 1) {
+          if (currentspace ==
+              0) { // change the currentspace from 0 to 1 or from 1 to 0
+            currentspace++;
+          } else {
+            currentspace = 0;
+          }
+          lastwassymbol = 0;
+          lastwasspace = 1;
+          symbol = 0;
+          spaces[currentspace] = 1;
+        } else {
+          spaces[currentspace]++;
         }
+      } else if (board[l][c] == symbol) {
+        streak++;
+      } else if (board[l][c] == 'X') {
+        if (lastwasspace == 1) {
+          score += evaluatescore(streak, spaces, symbol, symboltoplay,
+                                 currentstreak, currentspace);
+        }
+        symbol = 'X';
+        streak = 1;
+        lastwassymbol = 1;
+        lastwasspace = 0;
+      } else if (board[l][c] == 'O') {
+        symbol = 'O';
+        streak = 1;
+        lastwassymbol = 1;
       }
-      if (streak == 5) {
-        return 1;
-      }
+    }
+  }*/
+
+  for (l = 1; l < 23; l++) {
+    for (c = 1, symbol = 0, currentspace = 0, currentstreak = 0, symbol = 0;
+         c < 23; c++) {
     }
   }
 

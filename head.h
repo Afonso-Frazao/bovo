@@ -4,7 +4,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-int evaluateposition(int **board);
+int gamealreadyover(int **board, int symboltoplay);
+
+int evaluateposition(int **board, int symboltoplay);
 
 int verifygameover(int **board);
 

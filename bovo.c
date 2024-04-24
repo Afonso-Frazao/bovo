@@ -119,8 +119,6 @@ int main() {
       l = l - 'a' + 1;
       c = c - 'a' + 1;
 
-      printf("coords: %d %d\n", l, c);
-
       if ((l < 1 || l > 22 || c < 1 || c > 22) && (l != 'z' - 'a' + 1) &&
           (l != 'y' - 'a' + 1)) {
         printf("\nInvalid move!\n");
