@@ -101,6 +101,9 @@ int main() {
 
   playsN = 0;
   while (playsN < 484) {
+    if (playsN > 12) {
+      evaluateposition(board, 'X');
+    }
     for (i = 0; i < 2; i++) {
       if (playsN != 0) {
         if (printingtime(board, moves[playsN - 1].l, moves[playsN - 1].c) !=

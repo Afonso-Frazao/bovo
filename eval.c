@@ -1,7 +1,32 @@
 #include "head.h"
 
-int evaluatescore(int *streak, int *spaces, int symbol, int symboltoplay,
-                  int currentstreak, int currentspace) {
+int evaluatescore(int *streak, int *spaces, int currentstreak,
+                  int *streaksymbol, int firstisspace, int symboltoplay,
+                  int lastisspace) {
+  int i;
+
+  printf("streak\n");
+  if (firstisspace == 0) { // first is a space
+    for (i = 0; i < currentstreak; i++) {
+      printf("spaces, number %d\n", spaces[i]);
+      printf("char %c, ", (char)(streaksymbol[i]));
+      printf("streak %d\n", streak[i]);
+    }
+    if (lastisspace == 1) { // last is a space
+      printf("spaces, number %d\n", spaces[i]);
+    }
+  } else { // first is not a space
+    for (i = 0; i < currentstreak - 1; i++) {
+      printf("char %c, streak %d\n", (char)(streaksymbol[i]), streak[i]);
+      printf(
+          "spaces, number %d\n",
+          spaces[i - 1]); // spaces[i-1] is the same as spaces[i-firstisspace]
+    }
+    if (lastisspace == 1) { // last is a space
+      printf("spaces, number %d\n", spaces[i]);
+    }
+  }
+
   return 0;
 }
 
@@ -10,54 +35,62 @@ int gamealreadyover(int **board, int symboltoplay) { return 0; }
 int evaluateposition(int **board, int symboltoplay) {
   int eval; // The 'X' will get a positive eval while the 'O' will get a
             // negative onel and then they will add
-  int *streak, currentstreak, *spaces, currentspace, symbol,
+  int *streak, currentstreak, *spaces, symbol,
       lastwassymbol; // lastwassymbol for when the last board square verified
                      // was a symbol
-  int lastwasspace, firstwasspace;
+  int *streaksymbol, firstisspace, lastisspace;
   long score;
-  int l, c;
+  int l, c, currentsymbol;
 
-  /*for (l = 1,symbol = 0, currentspace = 0, lastwassymbol = 0, score = 0;
-       l < 23; l++) {
-    for (c = 1; c < 23; c++) {
-      if (board[l][c] == 0) {
-        if (lastwassymbol == 1) {
-          if (currentspace ==
-              0) { // change the currentspace from 0 to 1 or from 1 to 0
-            currentspace++;
-          } else {
-            currentspace = 0;
-          }
-          lastwassymbol = 0;
-          lastwasspace = 1;
-          symbol = 0;
-          spaces[currentspace] = 1;
-        } else {
-          spaces[currentspace]++;
-        }
-      } else if (board[l][c] == symbol) {
-        streak++;
-      } else if (board[l][c] == 'X') {
-        if (lastwasspace == 1) {
-          score += evaluatescore(streak, spaces, symbol, symboltoplay,
-                                 currentstreak, currentspace);
-        }
-        symbol = 'X';
-        streak = 1;
-        lastwassymbol = 1;
-        lastwasspace = 0;
-      } else if (board[l][c] == 'O') {
-        symbol = 'O';
-        streak = 1;
-        lastwassymbol = 1;
-      }
-    }
-  }*/
+  streak = (int *)malloc(22 * sizeof(int));
+  spaces = (int *)malloc(22 * sizeof(int));
+  streaksymbol = (int *)malloc(22 * sizeof(int));
 
   for (l = 1; l < 23; l++) {
-    for (c = 1, symbol = 0, currentspace = 0, currentstreak = 0, symbol = 0;
-         c < 23; c++) {
+    if (board[l][1] == 0) { // 0 if first is a space and -1 if not
+      firstisspace = 0;
+    } else {
+      firstisspace = -1;
     }
+    if (board[l][22] == 0) { // 1 if last is a space and 0 if not
+      lastisspace = 1;
+    } else {
+      lastisspace = 0;
+    }
+    for (c = 1, symbol = 0, currentstreak = -1, lastwassymbol = 0,
+        spaces[0] = 0;
+         c < 23; c++) {
+      if (board[l][c] == 0) {
+        if (lastwassymbol == 1) {
+          lastwassymbol = 0;
+          spaces[currentstreak + firstisspace] = 1;
+        } else {
+          /*printf("currentstreak=%d\n", currentstreak);
+          printf("firstisspace=%d\n", firstisspace);*/
+          printf("space: %d\n", currentstreak + firstisspace);
+          spaces[currentstreak + firstisspace]++;
+        }
+      } else if (board[l][c] == symbol) {
+        if (lastwassymbol == 1) {
+          streak[currentstreak]++;
+        } else {
+          streaksymbol[currentstreak] = symbol;
+          streak[currentstreak] = 1;
+          lastwassymbol = 1;
+          currentstreak++;
+        }
+      } else {
+        currentsymbol = board[l][c];
+        streaksymbol[currentstreak] = currentsymbol;
+        streak[currentstreak] = 1;
+        lastwassymbol = 1;
+        symbol = currentsymbol;
+        currentstreak++;
+      }
+    }
+    evaluatescore(streak, spaces, currentstreak, streaksymbol, firstisspace,
+                  lastisspace, symboltoplay);
+    exit(0);
   }
 
   return eval;
