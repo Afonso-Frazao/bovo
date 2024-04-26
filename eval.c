@@ -117,48 +117,58 @@ long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
     printf("symbol: %c\nstreak: %d\n\n", streaksymbol[currentstreak],
            streak[currentstreak]);
   }*/
-
-  if (streaksymbol[0] !=
-      0) { // initialise the symbol with the first non zero symbol
-    symbol = streaksymbol[0];
-  } else {
-    symbol = streaksymbol[1];
-  }
-  for (currentstreak = 0, samesymbolstreaks = 0, spacesbetween = 0, score = 0,
-      partialscore = 0;
-       currentstreak <= streaknumber; currentstreak++) {
-    if (streaksymbol[currentstreak] == 0) {
-      spacesbetween++;
-      partialscore += spacesscore(streak[currentstreak]);
-    } else if (streaksymbol[currentstreak] == symbol) {
-      samesymbolstreaks++;
-      partialscore += streakscore(streak[currentstreak]);
+  score = 0;
+  if (streaknumber >= 1) {
+    if (streaksymbol[0] !=
+        0) { // initialise the symbol with the first non zero symbol
+      symbol = streaksymbol[0];
     } else {
-      factor = scoremultiplier(samesymbolstreaks, spacesbetween, onetoplay);
-      partialscore *= factor;
-      if (symbol == 'X') { // for 'X' the score is positive
-        printf("partialscore = %ld\n", partialscore);
-        score += partialscore;
-      } else { // for 'O' the score is negative
-        printf("partialscore = %ld\n", -partialscore);
-        score -= partialscore;
-      }
-      symbol = streaksymbol[currentstreak];
-      if (symbol ==
-          symboltoplay) { // check if the current symbol is the one to play
-        onetoplay = 1;
-      } else {
-        onetoplay = 0;
-      }
-      partialscore = 0;
-      spacesbetween = 0;
-      samesymbolstreaks = 1;
-      if ((currentstreak > 0) && (streaksymbol[currentstreak - 1] == 0)) {
+      symbol = streaksymbol[1];
+    }
+    for (currentstreak = 0, samesymbolstreaks = 0, spacesbetween = 0,
+        partialscore = 0;
+         currentstreak <= streaknumber; currentstreak++) {
+      if (streaksymbol[currentstreak] == 0) {
         spacesbetween++;
+        partialscore += spacesscore(streak[currentstreak]);
+      } else if (streaksymbol[currentstreak] == symbol) {
+        samesymbolstreaks++;
+        partialscore += streakscore(streak[currentstreak]);
+      } else {
+        factor = scoremultiplier(samesymbolstreaks, spacesbetween, onetoplay);
+        partialscore *= factor;
+        if (symbol == 'X') { // for 'X' the score is positive
+          printf("partialscore = %ld\n", partialscore);
+          score += partialscore;
+        } else { // for 'O' the score is negative
+          printf("partialscore = %ld\n", -partialscore);
+          score -= partialscore;
+        }
+        symbol = streaksymbol[currentstreak];
+        if (symbol ==
+            symboltoplay) { // check if the current symbol is the one to play
+          onetoplay = 1;
+        } else {
+          onetoplay = 0;
+        }
+        partialscore = 0;
+        spacesbetween = 0;
+        samesymbolstreaks = 1;
+        if ((currentstreak > 0) && (streaksymbol[currentstreak - 1] == 0)) {
+          spacesbetween++;
+        }
       }
     }
+    factor = scoremultiplier(samesymbolstreaks, spacesbetween, onetoplay);
+    partialscore *= factor;
+    if (symbol == 'X') {
+      printf("partialscore = %ld\n", partialscore);
+      score += partialscore;
+    } else {
+      printf("partialscore = %ld\n", -partialscore);
+      score -= partialscore;
+    }
   }
-
   return score;
 }
 
