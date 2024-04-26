@@ -1,96 +1,276 @@
 #include "head.h"
 
-int evaluatescore(int *streak, int *spaces, int currentstreak,
-                  int *streaksymbol, int firstisspace, int symboltoplay,
-                  int lastisspace) {
-  int i;
+long spacesscore(int size) { // I could return the values
+                             // inside the cases of the switch
+  long score;
 
-  printf("streak\n");
-  if (firstisspace == 0) { // first is a space
-    for (i = 0; i < currentstreak; i++) {
-      printf("spaces, number %d\n", spaces[i]);
-      printf("char %c, ", (char)(streaksymbol[i]));
-      printf("streak %d\n", streak[i]);
-    }
-    if (lastisspace == 1) { // last is a space
-      printf("spaces, number %d\n", spaces[i]);
-    }
-  } else { // first is not a space
-    for (i = 0; i < currentstreak - 1; i++) {
-      printf("char %c, streak %d\n", (char)(streaksymbol[i]), streak[i]);
-      printf(
-          "spaces, number %d\n",
-          spaces[i - 1]); // spaces[i-1] is the same as spaces[i-firstisspace]
-    }
-    if (lastisspace == 1) { // last is a space
-      printf("spaces, number %d\n", spaces[i]);
+  switch (size) {
+
+  case 1:
+    score = 200;
+    break;
+  case 2:
+    score = 360;
+    break;
+  case 3:
+    score = 500;
+    break;
+  case 4:
+    score = 600;
+    break;
+  case 5:
+    score = 680;
+    break;
+  case 6:
+    score = 740;
+    break;
+  case 7:
+    score = 780;
+    break;
+  default:
+    score = 800;
+  }
+
+  return score;
+}
+
+long streakscore(int size) {
+  long score;
+
+  switch (size) {
+
+  case 1:
+    score = 1000;
+    break;
+  case 2:
+    score = 3000;
+    break;
+  case 3:
+    score = 7000;
+    break;
+  case 4:
+    score = 15000;
+    break;
+  case 5:
+    score = 100000000;
+    break;
+  }
+
+  return score;
+}
+
+double scoremultiplier(int samesymbolstreaks, int spacesbetween,
+                       int onetoplay) {
+  double factor;
+
+  switch (spacesbetween) {
+  case 0:
+    factor = 1;
+    break;
+  case 1:
+    factor = 1.1;
+    break;
+  case 2:
+    factor = 1.3;
+    break;
+  case 3:
+    factor = 1.6;
+    break;
+  case 4:
+    factor = 1.9;
+    break;
+  case 5:
+    factor = 2.2;
+    break;
+  default:
+    factor = 2.5;
+  }
+
+  switch (samesymbolstreaks) {
+  case 1:
+    break;
+  case 2:
+    factor *= 3;
+    break;
+  case 3:
+    factor *= 8;
+    break;
+  default:
+    factor *= 10;
+  }
+
+  if (onetoplay == 1) {
+    factor *= 1.5;
+  }
+
+  return factor;
+}
+
+long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
+                   int symboltoplay) {
+  int currentstreak, symbol;
+  int samesymbolstreaks, spacesbetween;
+  long score, partialscore, onetoplay;
+  double factor;
+
+  /*for (currentstreak = 0; currentstreak <= streaknumber; currentstreak++) {
+    printf("symbol: %c\nstreak: %d\n\n", streaksymbol[currentstreak],
+           streak[currentstreak]);
+  }*/
+
+  if (streaksymbol[0] !=
+      0) { // initialise the symbol with the first non zero symbol
+    symbol = streaksymbol[0];
+  } else {
+    symbol = streaksymbol[1];
+  }
+  for (currentstreak = 0, samesymbolstreaks = 0, spacesbetween = 0, score = 0,
+      partialscore = 0;
+       currentstreak <= streaknumber; currentstreak++) {
+    if (streaksymbol[currentstreak] == 0) {
+      spacesbetween++;
+      partialscore += spacesscore(streak[currentstreak]);
+    } else if (streaksymbol[currentstreak] == symbol) {
+      samesymbolstreaks++;
+      partialscore += streakscore(streak[currentstreak]);
+    } else {
+      factor = scoremultiplier(samesymbolstreaks, spacesbetween, onetoplay);
+      partialscore *= factor;
+      if (symbol == 'X') { // for 'X' the score is positive
+        printf("partialscore = %ld\n", partialscore);
+        score += partialscore;
+      } else { // for 'O' the score is negative
+        printf("partialscore = %ld\n", -partialscore);
+        score -= partialscore;
+      }
+      symbol = streaksymbol[currentstreak];
+      if (symbol ==
+          symboltoplay) { // check if the current symbol is the one to play
+        onetoplay = 1;
+      } else {
+        onetoplay = 0;
+      }
+      partialscore = 0;
+      spacesbetween = 0;
+      samesymbolstreaks = 1;
+      if ((currentstreak > 0) && (streaksymbol[currentstreak - 1] == 0)) {
+        spacesbetween++;
+      }
     }
   }
 
-  return 0;
+  return score;
 }
 
 int gamealreadyover(int **board, int symboltoplay) { return 0; }
 
-int evaluateposition(int **board, int symboltoplay) {
-  int eval; // The 'X' will get a positive eval while the 'O' will get a
-            // negative onel and then they will add
-  int *streak, currentstreak, *spaces, symbol,
-      lastwassymbol; // lastwassymbol for when the last board square verified
-                     // was a symbol
-  int *streaksymbol, firstisspace, lastisspace;
-  long score;
-  int l, c, currentsymbol;
+long evaluateposition(int **board, int symboltoplay) {
+  long eval; // The 'X' will get a positive eval while the 'O' will get a
+             // negative onel and then they will add
+  int *streak, currentstreak, symbol; // lastwassymbol for when the last board
+                                      // square verified was a symbol
+  int *streaksymbol;
+  int l, c, diag;
 
   streak = (int *)malloc(22 * sizeof(int));
-  spaces = (int *)malloc(22 * sizeof(int));
   streaksymbol = (int *)malloc(22 * sizeof(int));
 
-  for (l = 1; l < 23; l++) {
-    if (board[l][1] == 0) { // 0 if first is a space and -1 if not
-      firstisspace = 0;
-    } else {
-      firstisspace = -1;
-    }
-    if (board[l][22] == 0) { // 1 if last is a space and 0 if not
-      lastisspace = 1;
-    } else {
-      lastisspace = 0;
-    }
-    for (c = 1, symbol = 0, currentstreak = -1, lastwassymbol = 0,
-        spaces[0] = 0;
+  eval = 0;
+
+  for (l = 1; l < 23; l++) { // score lines
+    for (c = 2, symbol = board[l][1], streaksymbol[0] = board[l][1],
+        streak[0] = 1, currentstreak = 0;
          c < 23; c++) {
-      if (board[l][c] == 0) {
-        if (lastwassymbol == 1) {
-          lastwassymbol = 0;
-          spaces[currentstreak + firstisspace] = 1;
-        } else {
-          /*printf("currentstreak=%d\n", currentstreak);
-          printf("firstisspace=%d\n", firstisspace);*/
-          printf("space: %d\n", currentstreak + firstisspace);
-          spaces[currentstreak + firstisspace]++;
-        }
-      } else if (board[l][c] == symbol) {
-        if (lastwassymbol == 1) {
-          streak[currentstreak]++;
-        } else {
-          streaksymbol[currentstreak] = symbol;
-          streak[currentstreak] = 1;
-          lastwassymbol = 1;
-          currentstreak++;
-        }
+      if (board[l][c] == symbol) {
+        streak[currentstreak]++;
       } else {
-        currentsymbol = board[l][c];
-        streaksymbol[currentstreak] = currentsymbol;
-        streak[currentstreak] = 1;
-        lastwassymbol = 1;
-        symbol = currentsymbol;
         currentstreak++;
+        symbol = board[l][c];
+        streaksymbol[currentstreak] = symbol;
+        streak[currentstreak] = 1;
       }
     }
-    evaluatescore(streak, spaces, currentstreak, streaksymbol, firstisspace,
-                  lastisspace, symboltoplay);
-    exit(0);
+    eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
+  }
+
+  for (l = 1; l < 23; l++) { // score rows
+    for (c = 2, symbol = board[1][l], streaksymbol[0] = board[1][l],
+        streak[0] = 1, currentstreak = 0;
+         c < 23; c++) {
+      if (board[c][l] == symbol) {
+        streak[currentstreak]++;
+      } else {
+        currentstreak++;
+        symbol = board[c][l];
+        streaksymbol[currentstreak] = symbol;
+        streak[currentstreak] = 1;
+      }
+    }
+    eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
+  }
+
+  for (diag = 18; diag >= 1; diag--) { // score diagonal 1
+    for (l = 2, c = diag + 1, symbol = board[diag][1],
+        streaksymbol[0] = board[diag][1], streak[0] = 1, currentstreak = 0;
+         c < 23; l++, c++) {
+      if (board[c][l] == symbol) {
+        streak[currentstreak]++;
+      } else {
+        currentstreak++;
+        symbol = board[c][l];
+        streaksymbol[currentstreak] = symbol;
+        streak[currentstreak] = 1;
+      }
+    }
+    eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
+  }
+
+  for (diag = 2; diag < 19; diag++) { // score diagonal 1
+    for (l = diag + 1, c = 2, symbol = board[diag][1],
+        streaksymbol[0] = board[diag][1], streak[0] = 1, currentstreak = 0;
+         l < 23; l++, c++) {
+      if (board[c][l] == symbol) {
+        streak[currentstreak]++;
+      } else {
+        currentstreak++;
+        symbol = board[c][l];
+        streaksymbol[currentstreak] = symbol;
+        streak[currentstreak] = 1;
+      }
+    }
+    eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
+  }
+
+  for (diag = 5; diag < 23; diag++) { // score diagonal 2
+    for (l = diag - 1, c = 2, symbol = board[diag][1],
+        streaksymbol[0] = board[diag][1], streak[0] = 1, currentstreak = 0;
+         l >= 1; l--, c++) {
+      if (board[c][l] == symbol) {
+        streak[currentstreak]++;
+      } else {
+        currentstreak++;
+        symbol = board[c][l];
+        streaksymbol[currentstreak] = symbol;
+        streak[currentstreak] = 1;
+      }
+    }
+    eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
+  }
+
+  for (diag = 2; diag < 19; diag++) { // score diagonal 2
+    for (l = 21, c = diag + 1, symbol = board[22][diag],
+        streaksymbol[0] = board[22][diag], streak[0] = 1, currentstreak = 0;
+         c < 23; l--, c++) {
+      if (board[c][l] == symbol) {
+        streak[currentstreak]++;
+      } else {
+        currentstreak++;
+        symbol = board[c][l];
+        streaksymbol[currentstreak] = symbol;
+        streak[currentstreak] = 1;
+      }
+    }
+    eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
   }
 
   return eval;
@@ -144,9 +324,8 @@ int verifygameover(int **board) {
     }
   }
 
-  for (streak = 0, symbol = 'X', diag = 18;
-       diag >= 1; // TODO verify diag initialization value
-       diag--) {  // verify diagonal 1
+  for (streak = 0, symbol = 'X', diag = 18; diag >= 1;
+       diag--) { // verify diagonal 1
     for (i = 1, j = diag; j < 23; i++, j++) {
       if (board[i][j] == symbol) {
         streak++;

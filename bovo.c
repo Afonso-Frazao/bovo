@@ -6,7 +6,7 @@ typedef struct {
   int c;
 } coords;
 
-int printingtime(int **board, int lastl, int lastc) {
+int printingtime(int **board, int lastl, int lastc, long eval) {
   int i, j;
 
   printf("\n");
@@ -74,6 +74,7 @@ int printingtime(int **board, int lastl, int lastc) {
     }
     printf("\n");
   }
+  printf("eval = %ld\n", eval);
   printf("\n");
 
   return 0;
@@ -86,6 +87,7 @@ int main() {
   int gameover = 0;
   coords *moves;
   int playsN;
+  long eval;
 
   board = (int **)malloc(23 * sizeof(int *));
   for (i = 0; i < 23; i++) {
@@ -100,18 +102,16 @@ int main() {
   moves = (coords *)calloc(484, sizeof(int));
 
   playsN = 0;
+  eval = 0;
   while (playsN < 484) {
-    if (playsN > 12) {
-      evaluateposition(board, 'X');
-    }
     for (i = 0; i < 2; i++) {
       if (playsN != 0) {
-        if (printingtime(board, moves[playsN - 1].l, moves[playsN - 1].c) !=
-            0) {
+        if (printingtime(board, moves[playsN - 1].l, moves[playsN - 1].c,
+                         eval) != 0) {
           return 1;
         }
       } else {
-        if (printingtime(board, 0, 0) != 0) {
+        if (printingtime(board, 0, 0, eval) != 0) {
           return 1;
         }
       }
@@ -129,7 +129,7 @@ int main() {
         continue;
       }
 
-      if (l == 'z' - 'a' + 1) {
+      if (l == 'z' - 'a' + 1) { // undo
         if (playsN == 0) {
           printf("\nAlready at empty board!\n");
           i--;
@@ -137,11 +137,16 @@ int main() {
         }
         playsN--;
         board[moves[playsN].l][moves[playsN].c] = 0;
-        if (printingtime(board, moves[playsN - 1].l, moves[playsN - 1].c) !=
-            0) {
+        if (i == 0) {
+          eval = evaluateposition(board, 'O') / 100;
+        } else {
+          eval = evaluateposition(board, 'X') / 100;
+        }
+        if (printingtime(board, moves[playsN - 1].l, moves[playsN - 1].c,
+                         eval) != 0) {
           return 1;
         }
-      } else if (l == 'y' - 'a' + 1) {
+      } else if (l == 'y' - 'a' + 1) { // redo
         if (moves[playsN].l == 0) {
           printf("\nAlready at last play!\n");
           i--;
@@ -149,10 +154,12 @@ int main() {
         }
         if (i == 0) {
           board[moves[playsN].l][moves[playsN].c] = 'X';
+          eval = evaluateposition(board, 'O') / 100;
         } else {
           board[moves[playsN].l][moves[playsN].c] = 'O';
+          eval = evaluateposition(board, 'X') / 100;
         }
-        if (printingtime(board, moves[playsN].l, moves[playsN].c) != 0) {
+        if (printingtime(board, moves[playsN].l, moves[playsN].c, eval) != 0) {
           return 1;
         }
         playsN++;
@@ -182,15 +189,20 @@ int main() {
         }
 
         gameover = verifygameover(board);
+        if (i == 0) { // if 'X' played is 'O' turn and vice-versa
+          eval = evaluateposition(board, 'O') / 100;
+        } else {
+          eval = evaluateposition(board, 'X') / 100;
+        }
         if (gameover == 1) {
           if (i == 0) {
-            if (printingtime(board, l, c) != 0) {
+            if (printingtime(board, l, c, eval) != 0) {
               return 1;
             }
             printf("\n\033[38;5;208mX\033[0m wins!\n\n");
             return 0;
           } else {
-            if (printingtime(board, l, c) != 0) {
+            if (printingtime(board, l, c, eval) != 0) {
               return 1;
             }
             printf("\n\033[38;5;39mO\033[0m wins!\n\n");
