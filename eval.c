@@ -52,7 +52,7 @@ long streakscore(int size) {
     score = 15000;
     break;
   case 5:
-    score = 100000000;
+    score = 10000000000;
     break;
   }
 
@@ -100,7 +100,7 @@ double scoremultiplier(int samesymbolstreaks, int spacesbetween,
   }
 
   if (onetoplay == 1) {
-    factor *= 1.5;
+    factor *= 1.3;
   }
 
   return factor;
@@ -109,8 +109,8 @@ double scoremultiplier(int samesymbolstreaks, int spacesbetween,
 long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
                    int symboltoplay) {
   int currentstreak, symbol;
-  int samesymbolstreaks, spacesbetween;
-  long score, partialscore, onetoplay;
+  int samesymbolstreaks, spacesbetween, onetoplay;
+  long score, partialscore;
   double factor;
 
   /*for (currentstreak = 0; currentstreak <= streaknumber; currentstreak++) {
@@ -118,12 +118,18 @@ long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
            streak[currentstreak]);
   }*/
   score = 0;
-  if (streaknumber >= 1) {
+  if (streaknumber >= 1) { // I'm assuming that if there is only one streak
+                           // (streaknumber=0) it means that it is all 0's
     if (streaksymbol[0] !=
         0) { // initialise the symbol with the first non zero symbol
       symbol = streaksymbol[0];
     } else {
       symbol = streaksymbol[1];
+    }
+    if (symbol == symboltoplay) {
+      onetoplay = 1;
+    } else {
+      onetoplay = 0;
     }
     for (currentstreak = 0, samesymbolstreaks = 0, spacesbetween = 0,
         partialscore = 0;
@@ -138,10 +144,8 @@ long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
         factor = scoremultiplier(samesymbolstreaks, spacesbetween, onetoplay);
         partialscore *= factor;
         if (symbol == 'X') { // for 'X' the score is positive
-          printf("partialscore = %ld\n", partialscore);
           score += partialscore;
         } else { // for 'O' the score is negative
-          printf("partialscore = %ld\n", -partialscore);
           score -= partialscore;
         }
         symbol = streaksymbol[currentstreak];
@@ -151,10 +155,11 @@ long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
         } else {
           onetoplay = 0;
         }
-        partialscore = 0;
+        partialscore = streakscore(streak[currentstreak]);
         spacesbetween = 0;
         samesymbolstreaks = 1;
-        if ((currentstreak > 0) && (streaksymbol[currentstreak - 1] == 0)) {
+        if ((currentstreak > 0) && (streaksymbol[currentstreak - 1] ==
+                                    0)) { // verify if there are spaces before
           spacesbetween++;
         }
       }
@@ -162,17 +167,91 @@ long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
     factor = scoremultiplier(samesymbolstreaks, spacesbetween, onetoplay);
     partialscore *= factor;
     if (symbol == 'X') {
-      printf("partialscore = %ld\n", partialscore);
       score += partialscore;
     } else {
-      printf("partialscore = %ld\n", -partialscore);
       score -= partialscore;
     }
   }
   return score;
 }
 
-int gamealreadyover(int **board, int symboltoplay) { return 0; }
+long gamealreadyover(int *streak, int streaknumber, int *streaksymbol,
+                     int symboltoplay) {
+  int currentstreak;
+  long score;
+
+  score = 0;
+  if (streaknumber >= 1) {
+    for (currentstreak = 0; currentstreak <= streaknumber; currentstreak++) {
+      if ((streak[currentstreak] == 4) &&
+          (streaksymbol[currentstreak] !=
+           0)) { // check if 4 symbol streaks are forced game over
+        if ((currentstreak > 0) && (streaksymbol[currentstreak - 1] == 0) &&
+            (currentstreak < streaknumber) &&
+            (streaksymbol[currentstreak + 1] ==
+             0)) { // if there is a 4 symbol streak between spaces is forced
+                   // game over
+          if (streaksymbol[currentstreak] == symboltoplay) {
+            if (streaksymbol[currentstreak] == 'X') {
+              score += 100000000;
+            } else {
+              score -= 100000000;
+            }
+          } else {
+            if (streaksymbol[currentstreak] == 'X') {
+              score += 1000000;
+            } else {
+              score -= 1000000;
+            }
+          }
+        } else if (((currentstreak > 0) &&
+                        (streaksymbol[currentstreak - 1] == 0) ||
+                    ((currentstreak < streaknumber) &&
+                     (streaksymbol[currentstreak + 1] == 0))) &&
+                   (symboltoplay == streaksymbol[currentstreak])) {
+          if (streaksymbol[currentstreak] == 'X') {
+            score += 100000000;
+          } else {
+            score -= 100000000;
+          }
+        }
+      } else if ((streak[currentstreak] == 3) && (currentstreak > 0) &&
+                 (currentstreak < streaknumber) &&
+                 (streaksymbol[currentstreak] != 0) &&
+                 (symboltoplay ==
+                  streaksymbol[currentstreak])) { // if there is a 3 symbol
+                                                  // streak and the valid
+                                                  // symbols or spaces on each
+                                                  // syde so it is forced game
+                                                  // over
+        if ((streaksymbol[currentstreak - 1] == 0) &&
+            ((streak[currentstreak - 1] >= 2) ||
+             (streak[currentstreak - 1] == 1 && (currentstreak > 1) &&
+              streaksymbol[currentstreak - 2] ==
+                  streaksymbol[currentstreak]))) { // check if there is two
+                                                   // spaces or a space and one
+                                                   // or more symbols on each
+                                                   // side
+
+          if ((streaksymbol[currentstreak + 1] == 0) &&
+              ((streak[currentstreak + 1] >= 2) ||
+               (streak[currentstreak + 1] == 1 &&
+                (currentstreak < streaknumber - 1) &&
+                streaksymbol[currentstreak + 2] ==
+                    streaksymbol[currentstreak]))) {
+            if (streaksymbol[currentstreak] == 'X') {
+              score += 1000000;
+            } else {
+              score -= 1000000;
+            }
+          }
+        }
+      }
+    }
+  }
+
+  return score;
+}
 
 long evaluateposition(int **board, int symboltoplay) {
   long eval; // The 'X' will get a positive eval while the 'O' will get a
@@ -200,6 +279,7 @@ long evaluateposition(int **board, int symboltoplay) {
         streak[currentstreak] = 1;
       }
     }
+    eval += gamealreadyover(streak, currentstreak, streaksymbol, symboltoplay);
     eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
   }
 
@@ -216,6 +296,7 @@ long evaluateposition(int **board, int symboltoplay) {
         streak[currentstreak] = 1;
       }
     }
+    eval += gamealreadyover(streak, currentstreak, streaksymbol, symboltoplay);
     eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
   }
 
@@ -232,6 +313,7 @@ long evaluateposition(int **board, int symboltoplay) {
         streak[currentstreak] = 1;
       }
     }
+    eval += gamealreadyover(streak, currentstreak, streaksymbol, symboltoplay);
     eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
   }
 
@@ -248,6 +330,7 @@ long evaluateposition(int **board, int symboltoplay) {
         streak[currentstreak] = 1;
       }
     }
+    eval += gamealreadyover(streak, currentstreak, streaksymbol, symboltoplay);
     eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
   }
 
@@ -264,6 +347,7 @@ long evaluateposition(int **board, int symboltoplay) {
         streak[currentstreak] = 1;
       }
     }
+    eval += gamealreadyover(streak, currentstreak, streaksymbol, symboltoplay);
     eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
   }
 
@@ -280,6 +364,7 @@ long evaluateposition(int **board, int symboltoplay) {
         streak[currentstreak] = 1;
       }
     }
+    eval += gamealreadyover(streak, currentstreak, streaksymbol, symboltoplay);
     eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
   }
 

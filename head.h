@@ -13,7 +13,8 @@ double scoremultiplier(int samesymbolstreaks, int spacesbetween, int onetoplay);
 long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
                    int symboltoplay);
 
-int gamealreadyover(int **board, int symboltoplay);
+long gamealreadyover(int *streak, int streaknumber, int *streaksymbol,
+                     int symboltoplay);
 
 long evaluateposition(int **board, int symboltoplay);
 
