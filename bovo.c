@@ -6,6 +6,8 @@ typedef struct {
   int c;
 } coords;
 
+// comentario teste
+
 int printingtime(int **board, int lastl, int lastc, long eval) {
   int i, j;
 
