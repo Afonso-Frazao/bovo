@@ -1,11 +1,6 @@
 #include "head.h"
 #include <stdio.h>
 
-typedef struct {
-  int l;
-  int c;
-} coords;
-
 int printingtime(int **board, int lastl, int lastc, long eval) {
   int i, j;
 
