@@ -186,8 +186,10 @@ int main() {
         gameover = verifygameover(board);
         if (i == 0) { // if 'X' played is 'O' turn and vice-versa
           eval = evaluateposition(board, 'O') / 100;
+          verifyallplays(board, 'O');
         } else {
           eval = evaluateposition(board, 'X') / 100;
+          verifyallplays(board, 'X');
         }
         if (gameover == 1) {
           if (i == 0) {

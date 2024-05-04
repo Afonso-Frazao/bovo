@@ -9,13 +9,13 @@ typedef struct _coords {
   int c;
 } coords;
 
-void afonsosort(long *arr, int N, int size, int increment, int increasing);
+typedef struct _plays {
+  long score;
+  int line;
+  int col;
+} plays;
 
-long spacesscore(int size);
-
-long streakscore(int size);
-
-double scoremultiplier(int samesymbolstreaks, int spacesbetween, int onetoplay);
+void afonsosort(plays *arr, int N, int size, int increment, int increasing);
 
 long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
                    int symboltoplay);

@@ -1,8 +1,13 @@
 #include "head.h"
 
+#define SEARCHDEPTH 7
+#define PLAYSPERDEPTH 20
+
 typedef struct _node {
   int size;
-  long evalarr[30];
+  int currentplay;
+  plays *evalarr;
+  plays bestplay;
   struct _node *ptr;
 } node;
 
@@ -22,6 +27,17 @@ int opositesymbol(int symbol) {
   }
 }
 
+long numberofoutcomes(int validplaysnumber) {
+  int i, outcomes;
+
+  for (i = SEARCHDEPTH, outcomes = validplaysnumber, validplaysnumber--;
+       validplaysnumber > 0; validplaysnumber--) {
+    outcomes *= validplaysnumber;
+  }
+
+  return outcomes;
+}
+
 long evaluateline(int **board, int symboltoplay, int line, int col) {
   long eval;
   int *streak, currentstreak, symbol;
@@ -29,6 +45,9 @@ long evaluateline(int **board, int symboltoplay, int line, int col) {
   int l, c, diag;
 
   eval = 0;
+
+  streak = (int *)malloc(22 * sizeof(int));
+  streaksymbol = (int *)malloc(22 * sizeof(int));
 
   for (c = 2, symbol = board[line][1], streaksymbol[0] = board[line][0],
       streak[0] = 1, currentstreak = 0;
@@ -100,7 +119,7 @@ long evaluateline(int **board, int symboltoplay, int line, int col) {
     }
   }
 
-  if ((line + col - 1) <= 24) { // score the diagonal 2
+  if ((line + col - 1) <= 22) { // score the diagonal 2
     diag = line + col - 1;
     if (diag >= 5) {
       for (l = diag - 1, c = 2, symbol = board[diag][1],
@@ -143,18 +162,12 @@ long evaluateline(int **board, int symboltoplay, int line, int col) {
   return eval;
 }
 
-long verifyallplays(int **board, int symboltoplay) {
-  long eval;
-  long lineevalbefore, lineevalafter;
-  int i, l, c;
-  long *allplaysscore;
+int calculateplayseval(int **board, plays *allplaysscore, long eval,
+                       int symboltoplay) {
   int validplaysnumber;
-  coords *playsstack;
-  node *currentnode;
+  int l, c;
+  long lineevalbefore, lineevalafter;
 
-  allplaysscore = (long *)malloc(484 * sizeof(long));
-
-  eval = evaluateposition(board, symboltoplay);
   validplaysnumber = 0;
   for (l = 1; l < 23; l++) {
     for (c = 1; c < 23; c++) {
@@ -163,16 +176,19 @@ long verifyallplays(int **board, int symboltoplay) {
         board[l][c] = symboltoplay;
         symboltoplay = opositesymbol(symboltoplay);
         lineevalafter = evaluateline(board, symboltoplay, l, c);
-        allplaysscore[validplaysnumber] = eval + lineevalafter - lineevalafter;
+        allplaysscore[validplaysnumber].score =
+            eval + lineevalafter - lineevalbefore;
         validplaysnumber++;
       }
     }
   }
 
   if (validplaysnumber == 0) { // TODO condition here
+    return 0;
   }
 
-  if (((validplaysnumber % 7) != 0) && (validplaysnumber > 7)) {
+  if (((validplaysnumber % 7) != 0) &&
+      (validplaysnumber > 7)) { // sort the valid plays
     if (symboltoplay == 'X') {
       afonsosort(allplaysscore, validplaysnumber, validplaysnumber, 7,
                  0); // when the symbol to play is X the array should be sorted
@@ -188,17 +204,157 @@ long verifyallplays(int **board, int symboltoplay) {
     }
   }
   if (validplaysnumber >
-      30) { // the array that will be processed can't be bigger than 30
-    validplaysnumber = 30;
+      PLAYSPERDEPTH) { // the array that will be processed can't be bigger than
+                       // the number of plays per depth
+    validplaysnumber = PLAYSPERDEPTH;
   }
+
+  return validplaysnumber;
+}
+
+void createnode(plays *allplaysscore, int validplaysnumber, node *currentnode) {
+  int i;
+
+  currentnode->currentplay = 0;
   currentnode->size = validplaysnumber;
+  currentnode->evalarr = (plays *)malloc(validplaysnumber * sizeof(plays));
   for (i = 0; i < validplaysnumber; i++) {
     currentnode->evalarr[i] = allplaysscore[i];
   }
   currentnode->ptr = (node *)malloc(validplaysnumber * sizeof(node));
+
+  return;
+}
+
+plays highetorlowestscore(node *currentnode, int symboltoplay) {
+  plays bestplay;
+  int i;
+
+  if (symboltoplay == 'X') {
+    for (i = 1, bestplay = currentnode->evalarr[0]; i < currentnode->size;
+         i++) { // the size shouldn't be smaller than 1 ever
+      if (currentnode->evalarr[i].score > bestplay.score) {
+        bestplay = currentnode->evalarr[i];
+      }
+    }
+  } else {
+    for (i = 1, bestplay = currentnode->evalarr[0]; i < currentnode->size;
+         i++) { // the size shouldn't be smaller than 1 ever
+      if (currentnode->evalarr[i].score < bestplay.score) {
+        bestplay = currentnode->evalarr[i];
+      }
+    }
+  }
+
+  return bestplay;
+}
+
+plays bestbranch(node *currentnode, int symboltoplay) {
+  plays bestplay;
+  int i;
+
+  if (symboltoplay == 'X') {
+    for (i = 1, bestplay = currentnode->ptr[0].bestplay; i < currentnode->size;
+         i++) { // the size shouldn't be smaller than 1 ever
+      if (currentnode->ptr[0].bestplay.score > bestplay.score) {
+        bestplay = currentnode->ptr[0].bestplay;
+      }
+    }
+  } else {
+    for (i = 1, bestplay = currentnode->ptr[0].bestplay; i < currentnode->size;
+         i++) { // the size shouldn't be smaller than 1 ever
+      if (currentnode->ptr[0].bestplay.score < bestplay.score) {
+        bestplay = currentnode->ptr[0].bestplay;
+      }
+    }
+  }
+
+  return bestplay;
+}
+
+long verifyallplays(int **board, int symboltoplay) {
+  long eval;
+  int i, l, c;
+  plays *allplaysscore;
+  int validplaysnumber;
+  int maxstackheight;
+  node *currentnode;
+  node **playsstack;
+  int stackheight;
+  long outcomes, endofsearch;
+
+  allplaysscore = (plays *)malloc(484 * sizeof(plays));
+
+  eval = evaluateposition(board, symboltoplay);
+
+  validplaysnumber =
+      calculateplayseval(board, allplaysscore, eval, symboltoplay);
+
+  if (validplaysnumber == 0) {
+    return eval;
+  }
+
+  // caculate the number of outcomes with the current search depth and plays
+  // per depth
+
+  outcomes = numberofoutcomes(validplaysnumber);
+
+  createnode(allplaysscore, validplaysnumber, currentnode);
+
+  maxstackheight = validplaysnumber;
+
+  // currentnode->currentplay++;
   currentnode = currentnode->ptr;
-  for (i = 0; i < validplaysnumber; i++) {
-    currentnode->size = 0;
+  // increment the current play before accessing the pointer
+  stackheight = 0;
+  playsstack[0] = currentnode; // point to the newlly accessed play
+
+  endofsearch = 0;
+  while (endofsearch < outcomes) {
+    if (currentnode->currentplay <
+        currentnode->size) { // when the search reaches the max search
+                             // depth is time to go back
+      currentnode->currentplay++;
+      currentnode = &(currentnode->ptr[currentnode->currentplay]);
+      symboltoplay = opositesymbol(symboltoplay);
+    } else if (stackheight >= SEARCHDEPTH) { // time to go back as it reached
+                                             // the search depth
+      // TODO verify if this situation can even happen
+      stackheight--;
+      currentnode = playsstack[stackheight]; // go back to the previous play
+      symboltoplay =
+          opositesymbol(symboltoplay); // TODO add a free function here
+      endofsearch++;
+    } else { // time to go back
+      if (stackheight == maxstackheight - 1) {
+        currentnode->bestplay = highetorlowestscore(currentnode, symboltoplay);
+      } else {
+        currentnode->bestplay = bestbranch(currentnode, symboltoplay);
+        if (stackheight == 0) {
+          printf("Score: %ld\n", currentnode->bestplay.score);
+        }
+      }
+      stackheight--;
+      currentnode = playsstack[stackheight]; // go back to the previous play
+      symboltoplay =
+          opositesymbol(symboltoplay); // TODO add a free function here
+    }
+    validplaysnumber =
+        calculateplayseval(board, allplaysscore, eval, symboltoplay);
+    currentnode->size = validplaysnumber;
+
+    if (validplaysnumber == 0) { // time to go back
+      stackheight--;
+      currentnode = playsstack[stackheight]; // go back to the previous play
+      symboltoplay = opositesymbol(symboltoplay);
+      endofsearch++;
+    }
+
+    createnode(allplaysscore, validplaysnumber, currentnode);
+
+    currentnode = currentnode->ptr;
+    stackheight++;
+    playsstack[stackheight] = currentnode;
   }
 
   return eval;
