@@ -1,7 +1,9 @@
 #include "head.h"
 
-#define SEARCHDEPTH 7
-#define PLAYSPERDEPTH 20
+// #define SEARCHDEPTH 7
+#define SEARCHDEPTH 2
+// #define PLAYSPERDEPTH 20
+#define PLAYSPERDEPTH 5
 
 typedef struct _node {
   int size;
@@ -77,7 +79,9 @@ long evaluateline(int **board, int symboltoplay, int line, int col) {
     }
   }
   eval += gamealreadyover(streak, currentstreak, streaksymbol, symboltoplay);
-  eval += evaluatescore(streak, currentstreak, streaksymbol, symboltoplay);
+  eval += evaluatescore(streak, currentstreak, streaksymbol,
+                        symboltoplay); // TODO error here
+  // printf("%ld, ", eval);
 
   if ((col - line + 1) > 0) { // score the diagonal 1
     diag = col - line + 1;
@@ -175,7 +179,9 @@ int calculateplayseval(int **board, plays *allplaysscore, long eval,
         lineevalbefore = evaluateline(board, symboltoplay, l, c);
         board[l][c] = symboltoplay;
         symboltoplay = opositesymbol(symboltoplay);
-        lineevalafter = evaluateline(board, symboltoplay, l, c);
+        lineevalafter =
+            evaluateline(board, symboltoplay, l,
+                         c); // some uninitilialised value comes from here
         allplaysscore[validplaysnumber].score =
             eval + lineevalafter - lineevalbefore;
         validplaysnumber++;
@@ -183,7 +189,7 @@ int calculateplayseval(int **board, plays *allplaysscore, long eval,
     }
   }
 
-  if (validplaysnumber == 0) { // TODO condition here
+  if (validplaysnumber == 0) {
     return 0;
   }
 
@@ -299,14 +305,19 @@ long verifyallplays(int **board, int symboltoplay) {
 
   outcomes = numberofoutcomes(validplaysnumber);
 
+  /*if (currentnode == NULL) {
+    printf("what the heeeeee1\n");
+  }*/
+  currentnode = (node *)malloc(sizeof(node));
   createnode(allplaysscore, validplaysnumber, currentnode);
 
   maxstackheight = validplaysnumber;
 
   // currentnode->currentplay++;
-  currentnode = currentnode->ptr;
+  // currentnode = currentnode->ptr;
   // increment the current play before accessing the pointer
   stackheight = 0;
+  playsstack = (node **)malloc(SEARCHDEPTH * sizeof(node *));
   playsstack[0] = currentnode; // point to the newlly accessed play
 
   endofsearch = 0;
@@ -322,6 +333,8 @@ long verifyallplays(int **board, int symboltoplay) {
       // TODO verify if this situation can even happen
       stackheight--;
       currentnode = playsstack[stackheight]; // go back to the previous play
+      board[currentnode->evalarr[currentnode->currentplay - 1].line]
+           [currentnode->evalarr[currentnode->currentplay - 1].col] = 0;
       symboltoplay =
           opositesymbol(symboltoplay); // TODO add a free function here
       endofsearch++;
@@ -336,6 +349,8 @@ long verifyallplays(int **board, int symboltoplay) {
       }
       stackheight--;
       currentnode = playsstack[stackheight]; // go back to the previous play
+      board[currentnode->evalarr[currentnode->currentplay - 1].line]
+           [currentnode->evalarr[currentnode->currentplay - 1].col] = 0;
       symboltoplay =
           opositesymbol(symboltoplay); // TODO add a free function here
     }
@@ -344,10 +359,17 @@ long verifyallplays(int **board, int symboltoplay) {
     currentnode->size = validplaysnumber;
 
     if (validplaysnumber == 0) { // time to go back
-      stackheight--;
-      currentnode = playsstack[stackheight]; // go back to the previous play
-      symboltoplay = opositesymbol(symboltoplay);
-      endofsearch++;
+      if (stackheight != 0) {
+        stackheight--;
+        currentnode = playsstack[stackheight]; // go back to the previous play
+        board[currentnode->evalarr[currentnode->currentplay - 1].line]
+             [currentnode->evalarr[currentnode->currentplay - 1].col] = 0;
+        symboltoplay = opositesymbol(symboltoplay);
+        endofsearch++;
+      } else {
+        printf("acabou?\n");
+        break;
+      }
     }
 
     createnode(allplaysscore, validplaysnumber, currentnode);

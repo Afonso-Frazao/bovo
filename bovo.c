@@ -5,8 +5,8 @@ int printingtime(int **board, int lastl, int lastc, long eval) {
   int i, j;
 
   printf("\n");
-  for (i = 0; i < 23; i++) {
-    for (j = 0; j < 23; j++) {
+  for (i = 0; i < 24; i++) {
+    for (j = 0; j < 24; j++) {
       if (board[i][j] != 0) {             // print characters
         if ((j % 2) == 0) {               // print with white bar
           if (i != lastl || j != lastc) { // any play that isn't the last
@@ -43,7 +43,11 @@ int printingtime(int **board, int lastl, int lastc, long eval) {
             } else if (board[i][j] == -'O') {
               printf("\033[38;5;34mO\033[38;5;240m|\033[0m");
             } else {
-              printf("%c\033[38;5;240m|\033[0m", board[i][j]);
+              if (j != 23) {
+                printf("%c\033[38;5;240m|\033[0m", board[i][j]);
+              } else {
+                printf("%c", board[i][j]);
+              }
             }
           } else { // latest play
             if (board[i][j] == 'X') {
@@ -63,7 +67,9 @@ int printingtime(int **board, int lastl, int lastc, long eval) {
         if ((j % 2) == 0) { // print with white bar
           printf(" |");
         } else { // print with grey bar
-          printf(" \033[38;5;240m|\033[0m");
+          if ((i != 0 && i != 23) || j != 23) {
+            printf(" \033[38;5;240m|\033[0m");
+          }
         }
       }
     }
@@ -84,14 +90,16 @@ int main() {
   int playsN;
   long eval;
 
-  board = (int **)malloc(23 * sizeof(int *));
-  for (i = 0; i < 23; i++) {
-    board[i] = (int *)calloc(23, sizeof(int));
+  board = (int **)malloc(24 * sizeof(int *));
+  for (i = 0; i < 24; i++) {
+    board[i] = (int *)calloc(24, sizeof(int));
   }
 
   for (i = 1; i < 23; i++) {
     board[i][0] = i + 'a' - 1;
+    board[i][23] = i + 'a' - 1;
     board[0][i] = i + 'a' - 1;
+    board[23][i] = i + 'a' - 1;
   }
 
   moves = (coords *)calloc(484, sizeof(int));

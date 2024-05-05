@@ -51,9 +51,8 @@ long streakscore(int size) {
   case 4:
     score = 15000;
     break;
-  case 5:
+  default: // assuming it can't be zero
     score = 10000000000;
-    break;
   }
 
   return score;
@@ -143,7 +142,7 @@ long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
       } else {
         factor = scoremultiplier(samesymbolstreaks, spacesbetween, onetoplay);
         partialscore *= factor;
-        if (symbol == 'X') { // for 'X' the score is positive
+        if (symbol == 'X' || symbol == -'X') { // for 'X' the score is positive
           score += partialscore;
         } else { // for 'O' the score is negative
           score -= partialscore;
@@ -166,12 +165,13 @@ long evaluatescore(int *streak, int streaknumber, int *streaksymbol,
     }
     factor = scoremultiplier(samesymbolstreaks, spacesbetween, onetoplay);
     partialscore *= factor;
-    if (symbol == 'X') {
+    if (symbol == 'X' || symbol == -'X') {
       score += partialscore;
     } else {
       score -= partialscore;
     }
   }
+
   return score;
 }
 
@@ -249,7 +249,6 @@ long gamealreadyover(int *streak, int streaknumber, int *streaksymbol,
       }
     }
   }
-
   return score;
 }
 

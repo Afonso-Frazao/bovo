@@ -9,14 +9,28 @@ void afonsosort(plays *arr, int N, int size, int increment, int increasing) {
   int i, j, k, aux, hashtablesize;
   FILE *fp;
   struct numbers *arr2, *arr3, tmp;
+  long smallest;
 
   arr2 = (struct numbers *)calloc(size, sizeof(struct numbers));
 
   // is afonso sorting time
 
+  for (i = 1, smallest = arr[0].score; i < N; i++) {
+    if (smallest > arr[i].score) {
+      smallest = arr[i].score;
+    }
+  }
+  smallest--;
+
+  for (i = 0; i < N; i++) {
+    arr[i].score -= smallest;
+    // printf("aux: %ld\n", arr[i].score);
+  }
+
   hashtablesize = 0;
-  for (i = 0; i < size; i++) { // hashing time
-    aux = arr[i].score % N;
+  for (i = 0; i < N; i++) { // hashing time
+    aux = arr[i].score % size;
+    // printf("aux: %d\n", aux);
     if (arr2[aux].play.score == arr[i].score) {
       arr2[aux].occurences++;
     } else if (arr2[aux].occurences == 0) {
@@ -84,6 +98,10 @@ void afonsosort(plays *arr, int N, int size, int increment, int increasing) {
       arr[k] = arr3[i].play;
       k++;
     }
+  }
+
+  for (i = 0; i < N; i++) {
+    arr[i].score += smallest;
   }
 
   free(arr3);
