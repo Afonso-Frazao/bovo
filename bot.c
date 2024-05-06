@@ -283,11 +283,11 @@ long verifyallplays(int **board, int symboltoplay) {
   int i, l, c;
   plays *allplaysscore;
   int validplaysnumber;
-  int maxstackheight;
+  // int maxstackheight;
   node *currentnode;
   node **playsstack;
   int stackheight;
-  long outcomes, endofsearch;
+  // long outcomes, endofsearch;
 
   allplaysscore = (plays *)malloc(484 * sizeof(plays));
 
@@ -303,7 +303,7 @@ long verifyallplays(int **board, int symboltoplay) {
   // caculate the number of outcomes with the current search depth and plays
   // per depth
 
-  outcomes = numberofoutcomes(validplaysnumber);
+  // outcomes = numberofoutcomes(validplaysnumber);
 
   /*if (currentnode == NULL) {
     printf("what the heeeeee1\n");
@@ -311,7 +311,7 @@ long verifyallplays(int **board, int symboltoplay) {
   currentnode = (node *)malloc(sizeof(node));
   createnode(allplaysscore, validplaysnumber, currentnode);
 
-  maxstackheight = validplaysnumber;
+  // maxstackheight = validplaysnumber;
 
   // currentnode->currentplay++;
   // currentnode = currentnode->ptr;
@@ -320,9 +320,97 @@ long verifyallplays(int **board, int symboltoplay) {
   playsstack = (node **)malloc(SEARCHDEPTH * sizeof(node *));
   playsstack[0] = currentnode; // point to the newlly accessed play
 
-  endofsearch = 0;
-  while (endofsearch < outcomes) {
-    if (currentnode->currentplay <
+  // endofsearch = 0;
+  while (1) {
+    if (currentnode->currentplay < currentnode->size &&
+        stackheight < SEARCHDEPTH) { // play
+      currentnode->currentplay++;
+      playsstack[stackheight] = currentnode;
+      stackheight++;
+      eval = currentnode->evalarr[currentnode->currentplay - 1].score;
+      board[currentnode->evalarr[currentnode->currentplay - 1].line]
+           [currentnode->evalarr[currentnode->currentplay - 1].col] =
+               symboltoplay;
+      currentnode =
+          &(currentnode->ptr[currentnode->currentplay -
+                             1]); // have to subtract 1 because the current play
+                                  // is incremented before
+
+      currentnode->currentplay = 0;
+      symboltoplay = opositesymbol(symboltoplay);
+
+      validplaysnumber =
+          calculateplayseval(board, allplaysscore, eval, symboltoplay);
+
+      if (validplaysnumber == 0) { // TODO
+      }
+
+      createnode(allplaysscore, validplaysnumber, currentnode);
+
+      if (stackheight == SEARCHDEPTH - 1) { // if there isn't any bestplay's
+        // calculated they will be calculated
+        if (symboltoplay ==
+            'X') { // when is X to play the bestplay is the highest score
+          for (i = 1,
+              currentnode->bestplay.score = currentnode->evalarr[0].score;
+               i < currentnode->size; i++) { // TODO check symboltoplay variable
+            if (currentnode->evalarr[i].score > currentnode->bestplay.score) {
+              currentnode->bestplay = currentnode->evalarr[i];
+            }
+          }
+        } else { // when is O to play the bestplay is the lowest score
+          for (i = 1,
+              currentnode->bestplay.score = currentnode->evalarr[0].score;
+               i < currentnode->size; i++) {
+            if (currentnode->evalarr[i].score < currentnode->bestplay.score) {
+              currentnode->bestplay = currentnode->evalarr[i];
+            }
+          }
+        }
+      }
+
+    } else { // go back
+      if (currentnode->currentplay ==
+          currentnode->size) { // if the end of the array is reached the best
+                               // play in the array is calculated
+        // if the best plays are already calculated it only is needed to check
+        // the best
+        if (symboltoplay ==
+            'X') { // when is X to play the bestplay is the highest score
+          for (i = 1,
+              currentnode->bestplay.score = currentnode->ptr[0].bestplay.score;
+               i < currentnode->size; i++) {
+            if (currentnode->ptr[i].bestplay.score >
+                currentnode->bestplay.score) {
+              currentnode->bestplay = currentnode->ptr[i].bestplay;
+            }
+          }
+        } else { // when is O to play the bestplay is the lowest score
+          for (i = 1,
+              currentnode->bestplay.score = currentnode->ptr[0].bestplay.score;
+               i < currentnode->size; i++) {
+            if (currentnode->ptr[i].bestplay.score <
+                currentnode->bestplay.score) {
+              currentnode->bestplay = currentnode->ptr[i].bestplay;
+            }
+          }
+        }
+        for (i = 0; i < currentnode->size;
+             i++) { // free the nodes that won't be needed anymore
+          free(&(currentnode->ptr[i])); // free the already checked play node
+        }
+      }
+      // go back
+      stackheight--;
+      if (stackheight == -1) {
+        printf("The end\n");
+        break;
+      }
+      currentnode = playsstack[stackheight];
+      board[currentnode->evalarr[currentnode->currentplay].line]
+           [currentnode->evalarr[currentnode->currentplay].col] = 0;
+    }
+    /*if (currentnode->currentplay <
         currentnode->size) { // when the search reaches the max search
                              // depth is time to go back
       currentnode->currentplay++;
@@ -339,7 +427,7 @@ long verifyallplays(int **board, int symboltoplay) {
           opositesymbol(symboltoplay); // TODO add a free function here
       endofsearch++;
     } else { // time to go back
-      if (stackheight == maxstackheight - 1) {
+      if (stackheight == SEARCHDEPTH - 1) {
         currentnode->bestplay = highetorlowestscore(currentnode, symboltoplay);
       } else {
         currentnode->bestplay = bestbranch(currentnode, symboltoplay);
@@ -370,7 +458,7 @@ long verifyallplays(int **board, int symboltoplay) {
         printf("acabou?\n");
         break;
       }
-    }
+    }*/
 
     createnode(allplaysscore, validplaysnumber, currentnode);
 
